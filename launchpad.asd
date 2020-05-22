@@ -6,6 +6,7 @@
   :license  "MIT"
   :version "0.0.1"
   :serial t
+  :pathname "src"
   :depends-on (#:cl-rtmidi
                #:cl-arrows
                #:3d-matrices)
