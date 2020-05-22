@@ -2,22 +2,52 @@
 
 (in-package #:launchpad)
 
-(defun list-to-mat (list)
-  (->> list
-       (substitute 0 '_)
-       (substitute 1 'X)
-       (apply #'mat)))
-
 (defun command (raw-midi)
   (cl-rtmidi:with-midi-oss-out (cl-rtmidi:*default-midi-out-stream* "/dev/midi1")
     (cl-rtmidi:write-midi-message
      (make-instance 'cl-rtmidi:midi-message :raw-midi raw-midi))))
 
+(defun button-xy (x y)
+  (declare (type (integer 0 7) x y))
+  (command (list 144 (+ x (* y 16))
+                 #b0110010)))
+
+;; TODO: support drum-rack mode
+(defun button-scene (button)
+  (declare (type (integer 0 7) button))
+  (let ((n (aref #(1 3 5 7 9 11 13 15) button)))
+    (command (list 144 (* 8 n) #b0110010))))
+
+(defun button-automap (button)
+  (declare (type (integer 0 7) button))
+  (command (list 176 (+ 104 button) #b0110000)))
+
+(defun all-low     () (command '(176 0 125)))
+(defun all-med     () (command '(176 0 126)))
+(defun all-hig     () (command '(176 0 127)))
+(defun reset       () (command '(176 0   0)))
+(defun layout-xy   () (command '(176 0   1)))
+(defun layout-drum () (command '(176 0   2)))
+
 #+nil
 (progn
-  (command '(176 0 0))
-  (command (list 144 (+ (random 8) (* (random 8) 16)) #b0110010))
-  (command (list 176 (+ (random 8) 104)               #b0110010)))
+  (reset)
+  (layout-drum)
+  (button-automap (random 8)))
+
+#+nil
+(progn
+  (reset)
+  (layout-xy)
+  (button-xy      (random 8) (random 8))
+  (button-automap (random 8))
+  (button-scene   (random 8)))
+
+(defun list-to-mat (list)
+  (->> list
+       (substitute 0 '_)
+       (substitute 1 'X)
+       (apply #'mat)))
 
 (defparameter *five*
   '(_ _ _ _ X _ _ _
