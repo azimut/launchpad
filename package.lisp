@@ -1,4 +1,5 @@
 ;;;; package.lisp
 
-(uiop:define-package #:launchpad
-  (:use #:cl))
+(cl:defpackage #:launchpad
+  (:use #:cl #:cl-arrows #:3d-matrices)
+  (:local-nicknames (#:a #:alexandria)))
