@@ -1,0 +1,38 @@
+* Launchpad
+** TODO
+  - Better CL 2A operations?
+** Modes
+  - Griode
+    https://github.com/jpetazzo/griode
+    https://www.youtube.com/playlist?list=PLBAFXs0YjviK9PzKnr3MDsRU6YAJgeH1K
+    - Highlights root notes, like if in C mayor highligh all C's
+      MidHighlight to notes in key
+      No Light to notes off key
+  - Scale Mode, shows only notes in key
+** Amazing Sound Matrix Game
+  https://www.youtube.com/watch?v=O264zkes68s
+  - scale of notes vertical/column, upper is higher pitch
+  - horizontal is time
+** launchpad-programmers-reference.pdf
+  - raw-midi slot - type key velocity
+  - types
+    128 80h - note off
+    144 90h - note on
+    176 B0h - control
+  - commands
+    '(176 0 125-127) TURN ON
+    '(176 0 0)       TURN OFF/ RESET
+    '(176 0 1-2)     LAYOUT (xy or drumrack)
+    '(176 0 32-61)   DOUBLE BUFFER (copy, flash, update, display)
+  - (+ COLUMN (* ROW 16))
+  - velocity
+    #b0110011
+    #b0ggCCrr g=green r=red C="Clears the other buffer" C="Copy to both buffers"
+  - all on channel 1
+  - colors
+    - green
+    - red
+    - amber = green+red
+  - optional optimizations:
+    - channel 3 from 146d/92h, updates 2 at the time
+    - double buffer (draw/swap)
