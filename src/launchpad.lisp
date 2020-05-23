@@ -7,16 +7,20 @@
    (make-instance 'cl-rtmidi:midi-message :raw-midi raw-midi)))
 
 (defun command (raw-midi)
-  (cl-rtmidi:with-midi-oss-out (cl-rtmidi:*default-midi-out-stream* "/dev/midi1")
+  (cl-rtmidi:with-midi-oss-out
+      (cl-rtmidi:*default-midi-out-stream* "/dev/midi1")
     (raw-command raw-midi)))
+
+(defun xy-to-key (x y) (+ x (* y 16)))
+(defun key-to-xy (key) (floor key 16))
 
 (defun button-xy (x y)
   (declare (type (integer 0 7) x y))
-  (command (list 144 (+ x (* y 16)) #b0110011)))
+  (command (list 144 (xy-to-key x y) #b0110011)))
 
 (defun button-xy-off (x y)
   (declare (type (integer 0 7) x y))
-  (command (list 128 (+ x (* y 16)) 0)))
+  (command (list 128 (xy-to-key x y) 0)))
 
 ;; TODO: support drum-rack mode
 (defun button-scene (button)
@@ -121,15 +125,33 @@
 
 (defun test-input ()
   "IN debug print what is pressed"
-  (cl-rtmidi:with-midi-oss-in (cl-rtmidi:*default-midi-in-stream* "/dev/midi1")
+  (cl-rtmidi:with-midi-oss-in
+      (cl-rtmidi:*default-midi-in-stream* "/dev/midi1")
     (loop (print (slot-value (cl-rtmidi:read-midi-message)
                              'cl-rtmidi::raw-midi))
           (force-output))))
 
 (defun handle-loop (raw-midi)
+  "led pressure"
   (destructuring-bind (mtype mkey mvel) raw-midi
-    (let ((vel (if (zerop mvel) 0 (a:random-elt +codes+))))
-      (raw-command (list mtype mkey vel)))))
+    (->> (if (zerop mvel) 0 (a:random-elt +codes+))
+         (list mtype mkey)
+         (raw-command))))
+
+(let ((mat8 (muniform 8 8 0)))
+  (defun handle-reset ()
+    (setf mat8 (muniform 8 8 0))
+    (reset))
+  (defun handle-loop (raw-midi)
+    "led switch"
+    (destructuring-bind (mtype mkey mvel) raw-midi
+      (multiple-value-bind (x y) (key-to-xy mkey)
+        (when (plusp mvel)
+          (->> (if (zerop (mcref mat8 x y))
+                   (round (setf (mcref mat8 x y) (a:random-elt +codes+)))
+                   (round (setf (mcref mat8 x y) 0)))
+               (list mtype mkey)
+               (raw-command)))))))
 
 (defun test-io()
   "IN debug print what is pressed"
