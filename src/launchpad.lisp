@@ -2,21 +2,27 @@
 
 (in-package #:launchpad)
 
+(defun raw-command (raw-midi)
+  (cl-rtmidi:write-midi-message
+   (make-instance 'cl-rtmidi:midi-message :raw-midi raw-midi)))
+
 (defun command (raw-midi)
   (cl-rtmidi:with-midi-oss-out (cl-rtmidi:*default-midi-out-stream* "/dev/midi1")
-    (cl-rtmidi:write-midi-message
-     (make-instance 'cl-rtmidi:midi-message :raw-midi raw-midi))))
+    (raw-command raw-midi)))
 
 (defun button-xy (x y)
   (declare (type (integer 0 7) x y))
-  (command (list 144 (+ x (* y 16))
-                 #b0110010)))
+  (command (list 144 (+ x (* y 16)) #b0110011)))
+
+(defun button-xy-off (x y)
+  (declare (type (integer 0 7) x y))
+  (command (list 128 (+ x (* y 16)) 0)))
 
 ;; TODO: support drum-rack mode
 (defun button-scene (button)
   (declare (type (integer 0 7) button))
   (let ((n (aref #(1 3 5 7 9 11 13 15) button)))
-    (command (list 144 (* 8 n) #b0110010))))
+    (command (list 144 (* 8 n) #b0110001))))
 
 (defun button-automap (button)
   (declare (type (integer 0 7) button))
@@ -28,6 +34,44 @@
 (defun reset       () (command '(176 0   0)))
 (defun layout-xy   () (command '(176 0   1)))
 (defun layout-drum () (command '(176 0   2)))
+
+(defun interleave (list &rest lists)
+  "Return a list whose elements are taken from LIST and each of LISTS like this:
+   1st of list, 1st of 1st of lists,..., 1st of last of lists, 2nd of list,..."
+  (apply #'mapcan (lambda (&rest els)
+                    els)
+         list lists))
+
+(a:define-constant +colors+
+    '(:OFF :LR :MR :HR
+      :LG  :LO :MO :HO
+      :MG  :LO :MO :HO
+      :HG  :LO :MO :HO)
+  :test #'equal)
+(a:define-constant +green+ '(#b0000000 #b0010000 #b0100000 #b0110000) :test #'equal)
+(a:define-constant +red+   '(#b0000000 #b0000001 #b0000010 #b0000011) :test #'equal)
+(a:define-constant +codes+  (a:map-product #'logior +green+ +red+)    :test #'equal)
+(a:define-constant +prop+   (interleave +colors+ +codes+)             :test #'equal)
+
+(defun color (code) (getf +prop+ code))
+
+;; (command (list 144 (+ 3 (* 3 16)) (color :LO)))
+;; (command (list 144 (+ 3 (* 3 16)) (alexandria:random-elt +codes+)))
+
+(defparameter *db-mask*      #b0100000)
+(defparameter *db-copy*      #b0010000)
+(defparameter *db-flash*     #b0001000)
+(defparameter *db-update-1*  #b0000100)
+(defparameter *db-display-1* #b0000001)
+
+#+nil
+(progn
+  (reset)
+  (layout-xy)
+  (button-xy      (random 8) (random 8))
+  (button-automap (random 8))
+  (button-scene   (random 8))
+  (command (list 176 0 (logior *db-mask* *db-flash*))))
 
 #+nil
 (progn
@@ -68,15 +112,29 @@
                     (reverse)
                     (map 'list #'identity)
                     (apply #'mat)))))
-    (command '(176 0 0))
-    (dotimes (row 8)
-      (dotimes (col 8)
-        (when (= 1 (mcref m col row))
-          (command (list 144 (+ row (* col 16)) #b0110010)))))))
+    (reset)
+    (with-fast-matref (e m 8)
+      (dotimes (row 8)
+        (dotimes (col 8)
+          (when (= 1 (e col row))
+            (command (list 144 (+ row (* col 16)) #b0110010))))))))
 
 (defun test-input ()
   "IN debug print what is pressed"
   (cl-rtmidi:with-midi-oss-in (cl-rtmidi:*default-midi-in-stream* "/dev/midi1")
     (loop (print (slot-value (cl-rtmidi:read-midi-message)
                              'cl-rtmidi::raw-midi))
+          (force-output))))
+
+(defun handle-loop (raw-midi)
+  (destructuring-bind (mtype mkey mvel) raw-midi
+    (let ((vel (if (zerop mvel) 0 (a:random-elt +codes+))))
+      (raw-command (list mtype mkey vel)))))
+
+(defun test-io()
+  "IN debug print what is pressed"
+  (cl-rtmidi::with-midi-oss-io ("/dev/midi1")
+    (loop (handle-loop
+           (slot-value (cl-rtmidi:read-midi-message)
+                       'cl-rtmidi::raw-midi))
           (force-output))))
