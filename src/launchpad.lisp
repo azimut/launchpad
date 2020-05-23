@@ -186,3 +186,36 @@
            (slot-value (cl-rtmidi:read-midi-message)
                        'cl-rtmidi::raw-midi))
           (force-output))))
+
+;;--------------------------------------------------
+
+(let ((colors (list (color :lg)
+                    (color :lr)
+                    (color :lo)
+                    (color :off)
+                    (color :off))))
+  (defun draw-random ()
+    (sleep .1)
+    (raw-command
+     (list
+      144
+      (xy-to-key
+       (round
+        (* 7
+           (+ .5
+               (* .5
+                  (sin (get-internal-real-time))))))
+       (round
+        (* 7
+           (+ .5
+               (* .5
+                  (cos (get-internal-real-time)))))))
+      (alexandria:random-elt colors)))))
+
+(defun test-random()
+  "IN debug print what is pressed"
+  (reset)
+  (cl-rtmidi::with-midi-oss-out
+      (cl-rtmidi:*default-midi-out-stream* "/dev/midi1")
+    (loop (draw-random)
+          (force-output))))
