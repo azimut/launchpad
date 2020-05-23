@@ -1,5 +1,19 @@
 ;;;; launchpad.lisp
 
+(in-package #:cl-rtmidi)
+
+(defmacro with-midi-oss-io ((device-filename) &body body)
+  (let ((byte-stream (gensym "byte-stream")))
+    `(with-open-file (,byte-stream ,device-filename
+				   :direction :io
+				   :if-exists :overwrite
+				   :element-type '(unsigned-byte 8))
+       (let* ((iostream (make-instance 'midi-oss-stream
+                                       :byte-stream ,byte-stream))
+              (cl-rtmidi:*default-midi-in-stream* iostream)
+              (cl-rtmidi:*default-midi-out-stream* iostream))
+	 ,@body))))
+
 (in-package #:launchpad)
 
 (defun raw-command (raw-midi)
@@ -39,6 +53,22 @@
 (defun layout-xy   () (command '(176 0   1)))
 (defun layout-drum () (command '(176 0   2)))
 
+#+nil
+(progn
+  (reset)
+  (layout-drum)
+  (button-automap (random 8)))
+
+#+nil
+(progn
+  (reset)
+  (layout-xy)
+  (button-xy      (random 8) (random 8))
+  (button-automap (random 8))
+  (button-scene   (random 8)))
+
+;;--------------------------------------------------
+
 (defun interleave (list &rest lists)
   "Return a list whose elements are taken from LIST and each of LISTS like this:
    1st of list, 1st of 1st of lists,..., 1st of last of lists, 2nd of list,..."
@@ -59,8 +89,12 @@
 
 (defun color (code) (getf +prop+ code))
 
-;; (command (list 144 (+ 3 (* 3 16)) (color :LO)))
-;; (command (list 144 (+ 3 (* 3 16)) (alexandria:random-elt +codes+)))
+#+nil
+(progn
+  (command (list 144 (+ 3 (* 3 16)) (color :LO)))
+  (command (list 144 (+ 3 (* 3 16)) (alexandria:random-elt +codes+))))
+
+;;--------------------------------------------------
 
 (defparameter *db-mask*      #b0100000)
 (defparameter *db-copy*      #b0010000)
@@ -77,19 +111,7 @@
   (button-scene   (random 8))
   (command (list 176 0 (logior *db-mask* *db-flash*))))
 
-#+nil
-(progn
-  (reset)
-  (layout-drum)
-  (button-automap (random 8)))
-
-#+nil
-(progn
-  (reset)
-  (layout-xy)
-  (button-xy      (random 8) (random 8))
-  (button-automap (random 8))
-  (button-scene   (random 8)))
+;;--------------------------------------------------
 
 (defun list-to-mat (list)
   (->> list
@@ -123,6 +145,8 @@
           (when (= 1 (e col row))
             (command (list 144 (+ row (* col 16)) #b0110010))))))))
 
+;;--------------------------------------------------
+
 (defun test-input ()
   "IN debug print what is pressed"
   (cl-rtmidi:with-midi-oss-in
@@ -130,6 +154,8 @@
     (loop (print (slot-value (cl-rtmidi:read-midi-message)
                              'cl-rtmidi::raw-midi))
           (force-output))))
+
+;;--------------------------------------------------
 
 (defun handle-loop (raw-midi)
   "led pressure"
