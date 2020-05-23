@@ -1,6 +1,4 @@
 * Launchpad
-** TODO
-  - Better CL 2A operations?
 ** Modes
   - Griode
     https://github.com/jpetazzo/griode
@@ -35,4 +33,5 @@
     - amber = green+red
   - optional optimizations:
     - channel 3 from 146d/92h, updates 2 at the time
-    - double buffer (draw/swap)
+    - double buffer (draw/swap):
+      - on velocity, the clean/copy fields...so one can write to both at the same time
