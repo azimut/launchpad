@@ -25,16 +25,16 @@
       (cl-rtmidi:*default-midi-out-stream* "/dev/midi1")
     (raw-command raw-midi)))
 
-(defun xy-to-key (x y) (+ x (* y 16)))
-(defun key-to-xy (key) (floor key 16))
+(defun key (x y) (+ x (* y 16)))
+(defun xy  (key) (floor key 16))
 
-(defun button-xy (x y)
+(defun button-on (x y)
   (declare (type (integer 0 7) x y))
-  (command (list 144 (xy-to-key x y) #b0110011)))
+  (command (list 144 (key x y) #b0110011)))
 
-(defun button-xy-off (x y)
+(defun button-off (x y)
   (declare (type (integer 0 7) x y))
-  (command (list 128 (xy-to-key x y) 0)))
+  (command (list 128 (key x y) 0)))
 
 ;; TODO: support drum-rack mode
 (defun button-scene (button)
@@ -50,31 +50,27 @@
 (defun all-med     () (command '(176 0 126)))
 (defun all-hig     () (command '(176 0 127)))
 (defun reset       () (command '(176 0   0)))
-(defun layout-xy   () (command '(176 0   1)))
-(defun layout-drum () (command '(176 0   2)))
+
+(defun change-layout (xy-or-drum)
+  (ecase xy-or-drum
+    (:xy   (command '(176 0 1)))
+    (:drum (command '(176 0 2)))))
 
 #+nil
 (progn
   (reset)
-  (layout-drum)
+  (change-layout :drum)
   (button-automap (random 8)))
 
 #+nil
 (progn
   (reset)
-  (layout-xy)
-  (button-xy      (random 8) (random 8))
+  (change-layout :xy)
+  (button-on      (random 8) (random 8))
   (button-automap (random 8))
   (button-scene   (random 8)))
 
 ;;--------------------------------------------------
-
-(defun interleave (list &rest lists)
-  "Return a list whose elements are taken from LIST and each of LISTS like this:
-   1st of list, 1st of 1st of lists,..., 1st of last of lists, 2nd of list,..."
-  (apply #'mapcan (lambda (&rest els)
-                    els)
-         list lists))
 
 (a:define-constant +colors+
     '(:OFF :LR :MR :HR
@@ -82,6 +78,7 @@
       :MG  :LO :MO :HO
       :HG  :LO :MO :HO)
   :test #'equal)
+
 (a:define-constant +green+ '(#b0000000 #b0010000 #b0100000 #b0110000) :test #'equal)
 (a:define-constant +red+   '(#b0000000 #b0000001 #b0000010 #b0000011) :test #'equal)
 (a:define-constant +codes+  (a:map-product #'logior +green+ +red+)    :test #'equal)
@@ -105,8 +102,8 @@
 #+nil
 (progn
   (reset)
-  (layout-xy)
-  (button-xy      (random 8) (random 8))
+  (change-layout :xy)
+  (button-on      (random 8) (random 8))
   (button-automap (random 8))
   (button-scene   (random 8))
   (command (list 176 0 (logior *db-mask* *db-flash*))))
@@ -171,7 +168,7 @@
   (defun handle-loop (raw-midi)
     "led switch"
     (destructuring-bind (mtype mkey mvel) raw-midi
-      (multiple-value-bind (x y) (key-to-xy mkey)
+      (multiple-value-bind (x y) (xy mkey)
         (when (plusp mvel)
           (->> (if (zerop (mcref mat8 x y))
                    (round (setf (mcref mat8 x y) (a:random-elt +codes+)))
@@ -199,17 +196,17 @@
     (raw-command
      (list
       144
-      (xy-to-key
+      (key
        (round
         (* 7
            (+ .5
-               (* .5
-                  (sin (get-internal-real-time))))))
+              (* .5
+                 (sin (get-internal-real-time))))))
        (round
         (* 7
            (+ .5
-               (* .5
-                  (cos (get-internal-real-time)))))))
+              (* .5
+                 (cos (get-internal-real-time)))))))
       (alexandria:random-elt colors)))))
 
 (defun test-random()
