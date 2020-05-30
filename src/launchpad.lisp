@@ -46,6 +46,7 @@
   (declare (type (integer 0 7) button))
   (command (list 176 (+ 104 button) #b0110000)))
 
+(defun flash       () (command (list 176 0 (logior *db-mask* *db-flash*))))
 (defun all-low     () (command '(176 0 125)))
 (defun all-med     () (command '(176 0 126)))
 (defun all-hig     () (command '(176 0 127)))
