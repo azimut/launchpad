@@ -2,7 +2,23 @@
 
 (cl:defpackage #:launchpad
   (:use #:cl #:cl-arrows #:3d-matrices)
-  (:local-nicknames (#:a #:alexandria)))
+  (:local-nicknames (#:a #:alexandria))
+  (:export
+   #:raw-command #:command
+   ;;
+   #:reset
+   #:flash
+   #:all-low #:all-hig #:all-med
+   #:change-layout
+   ;;
+   #:color
+   #:xy
+   #:key
+   ;;
+   #:button-scene
+   #:button-automap
+   #:button-on
+   #:button-off))
 
 (in-package #:launchpad)
 
