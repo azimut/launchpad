@@ -36,6 +36,10 @@
   (declare (type (integer 0 7) x y))
   (command (list 128 (key x y) 0)))
 
+(defun button-drum (note)
+  (let ((note (alexandria:clamp note 36 99)))
+    (command (list 144 note #b0110011))))
+
 ;; TODO: support drum-rack mode
 (defun button-scene (button)
   (declare (type (integer 0 7) button))
@@ -52,6 +56,7 @@
 (defun all-hig     () (command '(176 0 127)))
 (defun reset       () (command '(176 0   0)))
 
+;; DRUM: 36-99 keynum
 (defun change-layout (xy-or-drum)
   (ecase xy-or-drum
     (:xy   (command '(176 0 1)))
@@ -61,6 +66,7 @@
 (progn
   (reset)
   (change-layout :drum)
+  (button-drum (random 99))
   (button-automap (random 8)))
 
 #+nil
@@ -86,6 +92,11 @@
 (a:define-constant +prop+   (interleave +colors+ +codes+)             :test #'equal)
 
 (defun color (code) (getf +prop+ code))
+(defun colors ()
+  (->> +prop+
+       (remove-if #'integerp)
+       (remove-duplicates)
+       (remove :off)))
 
 #+nil
 (progn
