@@ -93,8 +93,7 @@
 
 (defun color (code) (getf +prop+ code))
 (defun colors ()
-  (->> +prop+
-       (remove-if #'integerp)
+  (->> +colors+
        (remove-duplicates)
        (remove :off)))
 
