@@ -25,7 +25,7 @@
       (cl-rtmidi:*default-midi-out-stream* "/dev/midi1")
     (raw-command raw-midi)))
 
-(defun key (x y) (+ x (* y 16)))
+(defun key (col row) (+ col (* row 16)))
 (defun xy  (key) (floor key 16))
 
 (defun button-on (x y)
