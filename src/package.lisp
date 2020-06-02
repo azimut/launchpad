@@ -1,7 +1,7 @@
 ;;;; package.lisp
 
 (cl:defpackage #:launchpad
-  (:use #:cl #:cl-arrows #:3d-matrices)
+  (:use #:cl #:cl-arrows)
   (:local-nicknames (#:a #:alexandria))
   (:export
    #:raw-command #:command

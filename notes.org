@@ -7,6 +7,8 @@
       MidHighlight to notes in key
       No Light to notes off key
   - Scale Mode, shows only notes in key
+  - With Ableton - https://www.youtube.com/watch?v=j4FA6Y96RC0
+    Launches clips (ableton's cells) on beat
 ** Amazing Sound Matrix Game
   https://www.youtube.com/watch?v=O264zkes68s
   - scale of notes vertical/column, upper is higher pitch
