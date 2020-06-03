@@ -47,7 +47,6 @@
   (declare (type (integer 36 99) note))
   (command (list #x80 note 0)))
 
-;; TODO: Support DRUM
 (defun button-scene-xy-on (button)
   (declare (type (integer 0 7) button))
   (let ((n (aref #(1 3 5 7 9 11 13 15) button)))
@@ -56,6 +55,12 @@
   (declare (type (integer 0 7) button))
   (let ((n (aref #(1 3 5 7 9 11 13 15) button)))
     (command (list 128 (* 8 n) 0))))
+(defun button-scene-drum-on (button)
+  (declare (type (integer 0 7) button))
+  (command (list 144 (+ 100 button) #b0110001)))
+(defun button-scene-drum-off (button)
+  (declare (type (integer 0 7) button))
+  (command (list 128 (+ 100 button) 0)))
 
 (defun button-automap (button)
   (declare (type (integer 0 7) button))
