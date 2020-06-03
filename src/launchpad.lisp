@@ -32,41 +32,61 @@
     (raw-command raw-midi)))
 
 (defun key (col row) (+ col (* row 16)))
-(defun xy  (key) (floor key 16))
+(defun xy  (key)     (floor key 16))
 
-(defun button-on (x y)
-  (declare (type (integer 0 7) x y))
-  (command (list 144 (key x y) #b0110011)))
+(defun button-on (col row)
+  (declare (type (integer 0 7) col row))
+  (command (list #x90 (key col row) #b0110011)))
+(defun button-off (col row)
+  (declare (type (integer 0 7) col row))
+  (command (list #x80 (key col row) 0)))
+(defun button-drum-on (note)
+  (declare (type (integer 36 99) note))
+  (command (list #x90 note #b0110011)))
+(defun button-drum-off (note)
+  (declare (type (integer 36 99) note))
+  (command (list #x80 note 0)))
 
-(defun button-off (x y)
-  (declare (type (integer 0 7) x y))
-  (command (list 128 (key x y) 0)))
-
-(defun button-drum (note)
-  (let ((note (alexandria:clamp note 36 99)))
-    (command (list 144 note #b0110011))))
-
-;; TODO: support drum-rack mode
-(defun button-scene (button)
+;; TODO: Support DRUM
+(defun button-scene-xy-on (button)
   (declare (type (integer 0 7) button))
   (let ((n (aref #(1 3 5 7 9 11 13 15) button)))
     (command (list 144 (* 8 n) #b0110001))))
+(defun button-scene-xy-off (button)
+  (declare (type (integer 0 7) button))
+  (let ((n (aref #(1 3 5 7 9 11 13 15) button)))
+    (command (list 128 (* 8 n) 0))))
 
 (defun button-automap (button)
   (declare (type (integer 0 7) button))
   (command (list 176 (+ 104 button) #b0110000)))
 
-(defun flash       () (command (list 176 0 (logior *db-mask* *db-flash*))))
-(defun all-low     () (command '(176 0 125)))
-(defun all-med     () (command '(176 0 126)))
-(defun all-hig     () (command '(176 0 127)))
-(defun reset       () (command '(176 0   0)))
+(defun flash   () (command (list 176 0 (logior *db-mask* *db-flash*))))
+(defun all-low () (command '(176 0 125)))
+(defun all-med () (command '(176 0 126)))
+(defun all-hig () (command '(176 0 127)))
+(defun reset   () (command '(176 0   0)))
 
 ;; DRUM: 36-99 keynum
 (defun change-layout (xy-or-drum)
   (ecase xy-or-drum
     (:xy   (command '(176 0 1)))
     (:drum (command '(176 0 2)))))
+
+(defun grid-keys-on-drum-layout ()
+  (a:iota (* 8 8) :start 36))
+
+(defun grid-keys-on-xy-layout ()
+  (loop :for col :below 8 :append
+        (loop :for row :below 8
+              :collect (key row col))))
+
+(defun get-keys (name)
+  (ecase name
+    (:xy        #.'(grid-keys-on-xy-layout))
+    (:drum      #.'(grid-keys-on-drum-layout))
+    (:side-xy   #.'(loop :repeat 7 :for k :from 1 :by 2 :collect (* 8 k)))
+    (:side-drum #.'(a:iota 8 :start 100))))
 
 ;;--------------------------------------------------
 

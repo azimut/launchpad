@@ -10,6 +10,7 @@
    #:flash
    #:all-low #:all-hig #:all-med
    #:change-layout
+   #:get-keys
    ;;
    #:color
    #:xy
