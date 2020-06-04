@@ -14,13 +14,12 @@
   (disconnect server)
   (connect server))
 
-;;--------------------------------------------------
-
 (defgeneric handle-input (server raw-midi)
   (:method (server raw-midi)))
 
+;;--------------------------------------------------
+
 (defmethod main-loop ((server launchpad))
-  "IN debug print what is pressed"
   (cl-rtmidi::with-midi-oss-io ("/dev/midi1")
     (loop (handle-input server (slot-value (cl-rtmidi:read-midi-message)
                                            'cl-rtmidi::raw-midi)))))
