@@ -4,13 +4,15 @@
   ())
 
 (defmethod disconnect ((server launchpad))
+  (reset)
   (stop-io-thread))
 
 (defmethod connect ((server launchpad))
   (start-io-thread))
 
 (defmethod reconnect ((server launchpad))
-  (reset))
+  (disconnect server)
+  (connect server))
 
 ;;--------------------------------------------------
 

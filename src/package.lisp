@@ -18,7 +18,10 @@
    ;;
    #:button-xy-on #:button-xy-off #:button-drum-on #:button-drum-off
    #:button-scene-xy-on #:button-scene-xy-off #:button-scene-drum-on #:button-scene-drum-off
-   #:button-automap-on #:button-automap-off))
+   #:button-automap-on #:button-automap-off
+   ;;
+   #:connect #:disconnect #:reconnect
+   #:handle-input #:main-loop))
 
 (in-package #:launchpad)
 
