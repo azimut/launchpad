@@ -10,7 +10,8 @@
   :depends-on (#:cl-rtmidi
                #:cl-arrows)
   :components ((:file "package")
-               (:file "launchpad")))
+               (:file "launchpad")
+               (:file "loop")))
 
 (asdf:defsystem #:launchpad/examples
   :description "Describe launchpad here"
