@@ -6,6 +6,12 @@
     - Highlights root notes, like if in C mayor highligh all C's
       MidHighlight to notes in key
       No Light to notes off key
+    - Show only notes in key, high/midlight for root and in key
+    - arpeggiator: same note pitch played N amount of times in the
+      same duration (d/N).
+      Number of notes N can be doubled from 4 to 8
+      Each duration can be changed.
+      Each octave can be changed too or muted.
   - Scale Mode, shows only notes in key
   - With Ableton - https://www.youtube.com/watch?v=j4FA6Y96RC0
     Launches clips (ableton's cells) on beat
