@@ -64,22 +64,22 @@
 
 (defun button-automap-on (button color)
   (declare (type (integer 0 7) button))
-  (command 176 (+ 104 button) color))
+  (command #xb0 (+ 104 button) color))
 (defun button-automap-off (button)
   (declare (type (integer 0 7) button))
-  (command 176 (+ 104 button) 0))
+  (command #xb0 (+ 104 button) 0))
 
-(defun flash   () (command 176 0 (logior *db-mask* *db-flash*)))
-(defun all-low () (command 176 0 125))
-(defun all-med () (command 176 0 126))
-(defun all-hig () (command 176 0 127))
-(defun reset   () (command 176 0   0))
+(defun flash   () (command #xb0 0 (logior *db-mask* *db-flash*)))
+(defun all-low () (command #xb0 0 125))
+(defun all-med () (command #xb0 0 126))
+(defun all-hig () (command #xb0 0 127))
+(defun reset   () (command #xb0 0   0))
 
 ;; DRUM: 36-99 keynum
 (defun change-layout (xy-or-drum)
   (ecase xy-or-drum
-    (:xy   (command 176 0 1))
-    (:drum (command 176 0 2))))
+    (:xy   (command #xb0 0 1))
+    (:drum (command #xb0 0 2))))
 
 (defun grid-keys-on-drum-layout ()
   (a:iota (* 8 8) :start 36))
