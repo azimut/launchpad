@@ -17,7 +17,7 @@
    #:key
    ;;
    #:button-scene
-   #:button-automap
+   #:button-automap-on #:button-automap-off
    #:button-on
    #:button-off))
 
