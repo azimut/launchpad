@@ -1,4 +1,15 @@
 * Launchpad
+- quantize sampled audio (detect silence and fit it in 1 beat)
+** Digikart
+- recording
+- quantize
+- 8 track midi sequence
+- 16 step sequencer
+- 128 steps patterns
+- https://www.youtube.com/watch?v=ZyFY0o44DK8
+  mute tracks
+  assign trigger conditions to steps|columns: percentage, every 2 of of 2
+  CC sequencer
 ** Modes
   - Griode
     https://github.com/jpetazzo/griode
