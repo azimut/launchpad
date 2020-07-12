@@ -1,16 +1,19 @@
 (in-package #:launchpad)
 
-(defclass launchpad ()
+(defclass controller ()
   ())
 
-(defmethod disconnect ((server launchpad))
+(defmethod initialize-instance :after ((obj controller) &key)
+  (connect obj))
+
+(defmethod disconnect ((server controller))
   (reset)
   (stop-io-thread))
 
-(defmethod connect ((server launchpad))
-  (start-io-thread))
+(defmethod connect ((server controller))
+  (start-io-thread server))
 
-(defmethod reconnect ((server launchpad))
+(defmethod reconnect ((server controller))
   (disconnect server)
   (connect server))
 
@@ -19,7 +22,7 @@
 
 ;;--------------------------------------------------
 
-(defmethod main-loop ((server launchpad))
+(defmethod main-loop ((server controller))
   (cl-rtmidi::with-midi-oss-io ("/dev/midi1")
     (loop (handle-input server (slot-value (cl-rtmidi:read-midi-message)
                                            'cl-rtmidi::raw-midi)))))
@@ -33,9 +36,9 @@
   (alexandria:when-let ((thread (get-io-thread)))
     (bt:thread-alive-p thread)))
 
-(defun start-io-thread ()
+(defun start-io-thread (obj)
   (when (not (alive-p))
-    (bt:make-thread (lambda () (main-loop (make-instance 'launchpad)))
+    (bt:make-thread (lambda () (main-loop obj))
                     :name "launchpad-io")))
 
 (defun stop-io-thread ()
