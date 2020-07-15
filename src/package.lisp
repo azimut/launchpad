@@ -23,7 +23,8 @@
    ;;
    #:controller
    #:connect #:disconnect #:reconnect
-   #:handle-input #:main-loop))
+   #:handle-input
+   #:start-io-thread #:stop-io-thread))
 
 (in-package #:launchpad)
 
